@@ -1,4 +1,4 @@
-import React, { useEffect, Fragment } from 'react';
+import React, { useEffect, Fragment, useState } from 'react';
 import styled from 'styled-components';
 import Bin from '../../assets/delete-icon.svg';
 import Edit from '../../assets/edit-icon.svg';
@@ -6,10 +6,18 @@ import Star from '../../assets/star.svg';
 import Starred from '../../assets/starred.svg';
 import { useSelector } from 'react-redux';
 import CardHeader from './CardHeader';
+import { productService } from '../../service/index';
+import { ModalTemplate } from '../';
+import { Link } from 'react-router-dom';
+import { routes } from '../../routes';
 
 const Container = styled.div`
+  position: relative;
   overflow-y: auto;
-  height: auto;
+  height: 50vh;
+  &:--webkit-scroll {
+    display: none;
+  }
 `;
 
 const CardContainer = styled.div`
@@ -52,51 +60,38 @@ const Hr = styled.hr`
 
 const ProductList = () => {
   const searchString = useSelector((state) => state.filter.search);
-  const data = [
-    {
-      sku: '#CA25',
-      image: 'img',
-      productName: 'Product-name',
-      price: '$24.00',
-      isFavorite: true
-    },
-    {
-      sku: '#CA25',
-      image: 'img',
-      productName: 'Product-name',
-      price: '$24.00',
-      isFavorite: false
-    },
-    {
-      sku: '#CA25',
-      image: 'img',
-      productName: 'Product-name',
-      price: '$24.00',
-      isFavorite: true
-    },
-    {
-      sku: '#CA25',
-      image: 'img',
-      productName: 'Product-name',
-      price: '$24.00',
-      isFavorite: true
-    }
-  ];
+  const [data, setData] = useState([]);
+  const [show, setShow] = useState(false);
+  const [id, setId] = useState(null);
+  const [refresh, setRefresh] = useState(false);
 
   useEffect(() => {
-    // TODO:implement API call
-  }, [searchString]);
+    productService.getAllProducts().then((res) => {
+      setData(res.data);
+      console.log(res.data);
+    });
+  }, [searchString, refresh]);
 
-  const rowMapper = ({ sku, image, productName, price, isFavorite, isLast }) => (
-    <Fragment>
+  const rowMapper = ({ sku, images, productName, price, isFavorite, isLast, key, id }) => (
+    <Fragment key={key}>
       <CardContainer>
         <Sku>{sku}</Sku>
-        <div>{image}</div>
+        <div>{images}</div>
         <Label>{productName}</Label>
         <Label>{price}</Label>
         <More>
-          <img src={Bin} alt="delete" />
-          <img src={Edit} alt="edit" />
+          <div
+            style={{ cursor: 'pointer' }}
+            onClick={() => {
+              setShow(true);
+              setId(id);
+              console.log('hit..');
+            }}>
+            <img src={Bin} alt="delete" />
+          </div>
+          <Link to={`${routes.PRODUCTS_EDIT}/${id}`}>
+            <img src={Edit} alt="edit" />
+          </Link>
           <img src={isFavorite ? Starred : Star} alt="favorite" />
         </More>
       </CardContainer>
@@ -105,20 +100,37 @@ const ProductList = () => {
   );
 
   return (
-    <Container>
+    <Fragment>
       <CardHeader />
-      {data.map((item, i) => {
-        const { sku, image, productName, price, isFavorite } = item;
-        return rowMapper({
-          sku,
-          image,
-          productName,
-          price,
-          isFavorite,
-          isLast: i === data.length - 1
-        });
-      })}
-    </Container>
+      <Container>
+        {data.map((item, i) => {
+          const { sku, images, productName, price, isFavorite, id } = item;
+          return rowMapper({
+            sku,
+            images,
+            productName,
+            price,
+            isFavorite,
+            isLast: i === data.length - 1,
+            key: `product-${id}`,
+            id
+          });
+        })}
+      </Container>
+      {show && (
+        <ModalTemplate
+          buttonText={'Delete'}
+          modalBodyText={'you will not be able to undo this action if you proceed!'}
+          modalTitle={'ARE YOU SURE?'}
+          onClick={() => {
+            productService.deleteProducts(id);
+            setRefresh(!refresh);
+          }}
+          setShow={setShow}
+          show={show}
+        />
+      )}
+    </Fragment>
   );
 };
 

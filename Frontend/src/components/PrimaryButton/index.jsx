@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import Spinner from 'react-bootstrap/Spinner';
 
 const Button = styled.button`
   display: flex;
@@ -8,6 +9,7 @@ const Button = styled.button`
   align-items: center;
   padding: 15px 45px;
   gap: 10px;
+  cursor: pointer;
 
   width: 249px;
   height: 56px;
@@ -31,10 +33,19 @@ const Label = styled.span`
   flex-grow: 0;
 `;
 
-const PrimaryButton = ({ label, onClick }) => {
+const PrimaryButton = ({ label, onClick, isSubmitting = false }) => {
+  console.log('isSubmitting', isSubmitting);
   return (
-    <Button onClick={onClick}>
-      <Label>{label}</Label>
+    <Button
+      onClick={() => {
+        console.log('cilcked');
+        onClick();
+      }}>
+      {isSubmitting ? (
+        <Spinner color="" animation="border" variant="light" />
+      ) : (
+        <Label>{label}</Label>
+      )}
     </Button>
   );
 };

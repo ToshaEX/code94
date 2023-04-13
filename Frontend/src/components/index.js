@@ -4,3 +4,7 @@ export { default as PrimaryButton } from './PrimaryButton';
 export { default as SecondaryButton } from './SecondaryButton';
 export { default as SearchBar } from './SearchBar';
 export { default as ProductList } from './ProductList';
+export { default as TextFiled } from './TextFiled';
+export { default as TextArea } from './TextArea';
+export { default as ImageUpload } from './ImageUpload';
+export { default as ModalTemplate } from './ModalTemplate';
